@@ -1,0 +1,14 @@
+{
+  "packages": [
+    "cbuffer"
+  ],
+  "deps": [],
+  "info": {
+    "description": "A bundle of C-FFI utility methods and classes to attempt to make C-FFI \"safer\"™",
+    "homepage": "",
+    "license": "",
+    "documentation_url": "",
+    "version": "0.1.0",
+    "name": "pony-ffi"
+  }
+}
