@@ -2,7 +2,7 @@ config ?= debug
 static ?= false
 linker ?=
 
-PACKAGE := cbuffer
+PACKAGE := pony-ffi
 GET_DEPENDENCIES_WITH := corral fetch
 CLEAN_DEPENDENCIES_WITH := corral clean
 PONYC ?= ponyc
@@ -11,7 +11,7 @@ BUILD_DOCS_WITH := corral run -- pony-doc
 
 BUILD_DIR ?= build/$(config)
 SRC_DIR ?= $(PACKAGE)
-tests_binary := $(BUILD_DIR)/cbuffer
+tests_binary := $(BUILD_DIR)/pony-ffi
 docs_dir := build/$(PACKAGE)-docs
 
 ifdef config
@@ -52,7 +52,7 @@ unit-tests: $(tests_binary)
 	$^
 
 $(tests_binary): $(SOURCE_FILES) | $(BUILD_DIR) dependencies
-	$(PONYC) -o $(BUILD_DIR) $(SRC_DIR)/tests -b cbuffer
+	$(PONYC) -o $(BUILD_DIR) $(SRC_DIR)/tests -b pony-ffi
 
 clean:
 	$(CLEAN_DEPENDENCIES_WITH)
@@ -66,6 +66,7 @@ $(docs_dir): $(SOURCE_FILES) dependencies
 	rm -rf $(docs_dir)
 	$(GET_DEPENDENCIES_WITH)
 	$(BUILD_DOCS_WITH) --output build $(SRC_DIR)
+	cp -r docs-theme/assets/* $(docs_dir)/docs/assets/
 
 docs: $(docs_dir)
 

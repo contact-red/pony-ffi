@@ -102,7 +102,7 @@ class \nodoc\ iso _TestWrittenSizePtrIdentity is UnitTest
   fun name(): String => "cbuffer/written_size_ptr/identity"
 
   fun apply(h: TestHelper) =>
-    let buf = CBuffer(16)
+    let buf = CBuffer[ISize](16)
     let wbox = buf.written_size_ptr()
     wbox.value = 5
     h.assert_eq[ISize](5, buf.get_written_size())
@@ -120,15 +120,15 @@ class \nodoc\ iso _TestAllocatedReturnsSize is UnitTest
   fun name(): String => "cbuffer/allocated_returns_size"
 
   fun apply(h: TestHelper) =>
-    h.assert_eq[USize](16, CBuffer(16).allocated())
-    h.assert_eq[USize](1, CBuffer(1).allocated())
-    h.assert_eq[USize](4096, CBuffer(4096).allocated())
+    h.assert_eq[USize](16, CBuffer[ISize](16).allocated())
+    h.assert_eq[USize](1, CBuffer[ISize](1).allocated())
+    h.assert_eq[USize](4096, CBuffer[ISize](4096).allocated())
 
 class \nodoc\ iso _TestInitialWrittenIsZero is UnitTest
   fun name(): String => "cbuffer/initial_written_is_zero"
 
   fun apply(h: TestHelper) =>
-    h.assert_eq[ISize](0, CBuffer(64).get_written_size())
+    h.assert_eq[ISize](0, CBuffer[ISize](64).get_written_size())
 
 class \nodoc\ iso _TestCreateZeroFilled is UnitTest
   """
@@ -140,7 +140,7 @@ class \nodoc\ iso _TestCreateZeroFilled is UnitTest
 
   fun apply(h: TestHelper) ? =>
     let cap: USize = 32
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     buf.set_written_size(cap.isize())
     let bytes: Array[U8] val = buf.copy_array_truncated()?
     h.assert_eq[USize](cap, bytes.size())
@@ -157,7 +157,7 @@ class \nodoc\ iso _TestWriteEmpty is UnitTest
   fun name(): String => "cbuffer/write/empty"
 
   fun apply(h: TestHelper) ? =>
-    let buf = CBuffer(8)
+    let buf = CBuffer[ISize](8)
     h.assert_true(buf.write(""))
     h.assert_eq[ISize](0, buf.get_written_size())
     h.assert_eq[USize](0, buf.copy_string()?.size())
@@ -166,7 +166,7 @@ class \nodoc\ iso _TestWriteAtCap is UnitTest
   fun name(): String => "cbuffer/write/at_cap"
 
   fun apply(h: TestHelper) ? =>
-    let buf = CBuffer(5)
+    let buf = CBuffer[ISize](5)
     h.assert_true(buf.write("hello"))
     h.assert_eq[ISize](5, buf.get_written_size())
     h.assert_eq[String]("hello", buf.copy_string()?)
@@ -175,7 +175,7 @@ class \nodoc\ iso _TestWriteOverCapReturnsFalse is UnitTest
   fun name(): String => "cbuffer/write/over_cap_returns_false"
 
   fun apply(h: TestHelper) =>
-    let buf = CBuffer(4)
+    let buf = CBuffer[ISize](4)
     h.assert_false(buf.write("hello"))
 
 class \nodoc\ iso _TestWriteOverCapLeavesStateUntouched is UnitTest
@@ -187,7 +187,7 @@ class \nodoc\ iso _TestWriteOverCapLeavesStateUntouched is UnitTest
   fun name(): String => "cbuffer/write/over_cap_no_op"
 
   fun apply(h: TestHelper) ? =>
-    let buf = CBuffer(4)
+    let buf = CBuffer[ISize](4)
     h.assert_true(buf.write("abcd"))
     let before_written = buf.get_written_size()
     let before_bytes: Array[U8] val = buf.copy_array()?
@@ -200,7 +200,7 @@ class \nodoc\ iso _TestWriteArrayEmpty is UnitTest
   fun name(): String => "cbuffer/write_array/empty"
 
   fun apply(h: TestHelper) ? =>
-    let buf = CBuffer(8)
+    let buf = CBuffer[ISize](8)
     let empty: Array[U8] val = recover val Array[U8] end
     h.assert_true(buf.write_array(empty))
     h.assert_eq[ISize](0, buf.get_written_size())
@@ -210,7 +210,7 @@ class \nodoc\ iso _TestWriteArrayAtCap is UnitTest
   fun name(): String => "cbuffer/write_array/at_cap"
 
   fun apply(h: TestHelper) ? =>
-    let buf = CBuffer(3)
+    let buf = CBuffer[ISize](3)
     let arr: Array[U8] val = recover val [as U8: 0x10; 0x20; 0x30] end
     h.assert_true(buf.write_array(arr))
     h.assert_eq[ISize](3, buf.get_written_size())
@@ -220,7 +220,7 @@ class \nodoc\ iso _TestWriteArrayOverCapReturnsFalse is UnitTest
   fun name(): String => "cbuffer/write_array/over_cap_returns_false"
 
   fun apply(h: TestHelper) =>
-    let buf = CBuffer(2)
+    let buf = CBuffer[ISize](2)
     let arr: Array[U8] val = recover val [as U8: 1; 2; 3] end
     h.assert_false(buf.write_array(arr))
 
@@ -238,7 +238,7 @@ class \nodoc\ iso _TestCopyErrorsOnNegativeWritten is UnitTest
   fun name(): String => "cbuffer/copy/negative_written_errors"
 
   fun apply(h: TestHelper) =>
-    let buf = CBuffer(8)
+    let buf = CBuffer[ISize](8)
     buf.set_written_size(-1)
     try buf.copy_string()?; h.fail("copy_string should error on negative") end
     try buf.copy_string_truncated()?
@@ -255,7 +255,7 @@ class \nodoc\ iso _TestCopyAtCapSucceedsBoth is UnitTest
   fun name(): String => "cbuffer/copy/at_cap_both_succeed"
 
   fun apply(h: TestHelper) ? =>
-    let buf = CBuffer(4)
+    let buf = CBuffer[ISize](4)
     h.assert_true(buf.write("abcd"))
     h.assert_eq[String]("abcd", buf.copy_string()?)
     h.assert_eq[String]("abcd", buf.copy_string_truncated()?)
@@ -269,7 +269,7 @@ class \nodoc\ iso _TestCopyTruncatedClampsAtCapPlusOne is UnitTest
   fun name(): String => "cbuffer/copy_string_truncated/clamps"
 
   fun apply(h: TestHelper) ? =>
-    let buf = CBuffer(4)
+    let buf = CBuffer[ISize](4)
     h.assert_true(buf.write("abcd"))
     buf.set_written_size(5)
     let s: String val = buf.copy_string_truncated()?
@@ -284,7 +284,7 @@ class \nodoc\ iso _TestCopyExactErrorsAtCapPlusOne is UnitTest
   fun name(): String => "cbuffer/copy_string/errors_over_cap"
 
   fun apply(h: TestHelper) =>
-    let buf = CBuffer(4)
+    let buf = CBuffer[ISize](4)
     buf.write("abcd")
     buf.set_written_size(5)
     try buf.copy_string()?; h.fail("copy_string should error past cap") end
@@ -293,7 +293,7 @@ class \nodoc\ iso _TestCopyArrayTruncatedClampsAtCapPlusOne is UnitTest
   fun name(): String => "cbuffer/copy_array_truncated/clamps"
 
   fun apply(h: TestHelper) ? =>
-    let buf = CBuffer(3)
+    let buf = CBuffer[ISize](3)
     let arr: Array[U8] val = recover val [as U8: 1; 2; 3] end
     h.assert_true(buf.write_array(arr))
     buf.set_written_size(4)
@@ -304,7 +304,7 @@ class \nodoc\ iso _TestCopyArrayExactErrorsAtCapPlusOne is UnitTest
   fun name(): String => "cbuffer/copy_array/errors_over_cap"
 
   fun apply(h: TestHelper) =>
-    let buf = CBuffer(3)
+    let buf = CBuffer[ISize](3)
     buf.write_array(recover val [as U8: 1; 2; 3] end)
     buf.set_written_size(4)
     try buf.copy_array()?; h.fail("copy_array should error past cap") end
@@ -325,7 +325,7 @@ class \nodoc\ iso _TestBzeroTrueZerosTail is UnitTest
 
   fun apply(h: TestHelper) ? =>
     let cap: USize = 10
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     h.assert_true(buf.write("AAAAAAAAAA"))
     h.assert_true(buf.write("B" where bzero = true))
     buf.set_written_size(cap.isize())
@@ -347,7 +347,7 @@ class \nodoc\ iso _TestBzeroFalsePreservesTail is UnitTest
 
   fun apply(h: TestHelper) ? =>
     let cap: USize = 10
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     h.assert_true(buf.write("AAAAAAAAAA"))
     h.assert_true(buf.write("B" where bzero = false))
     buf.set_written_size(cap.isize())
@@ -365,7 +365,7 @@ class \nodoc\ iso _TestWriteArrayBzeroTrueZerosTail is UnitTest
 
   fun apply(h: TestHelper) ? =>
     let cap: USize = 6
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     let big: Array[U8] val = recover val [as U8: 0xAA; 0xAA; 0xAA; 0xAA; 0xAA; 0xAA] end
     let small: Array[U8] val = recover val [as U8: 0xBB] end
     h.assert_true(buf.write_array(big))
@@ -384,7 +384,7 @@ class \nodoc\ iso _TestWriteArrayBzeroFalsePreservesTail is UnitTest
 
   fun apply(h: TestHelper) ? =>
     let cap: USize = 6
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     let big: Array[U8] val = recover val [as U8: 0xAA; 0xAA; 0xAA; 0xAA; 0xAA; 0xAA] end
     let small: Array[U8] val = recover val [as U8: 0xBB] end
     h.assert_true(buf.write_array(big))
@@ -407,7 +407,7 @@ class \nodoc\ iso _TestResetClearsWritten is UnitTest
   fun name(): String => "cbuffer/reset/clears_written"
 
   fun apply(h: TestHelper) =>
-    let buf = CBuffer(8)
+    let buf = CBuffer[ISize](8)
     h.assert_true(buf.write("hello"))
     h.assert_eq[ISize](5, buf.get_written_size())
     buf.reset()
@@ -422,7 +422,7 @@ class \nodoc\ iso _TestResetZerosBytes is UnitTest
 
   fun apply(h: TestHelper) ? =>
     let cap: USize = 8
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     h.assert_true(buf.write("ABCDEFGH"))
     buf.reset()
     buf.set_written_size(cap.isize())
@@ -450,7 +450,7 @@ class \nodoc\ iso _PropWriteStringRoundTrip is Property2[String, USize]
   fun ref property2(str: String, slack: USize, h: PropertyHelper) ? =>
     let s: String val = str.clone()
     let cap = s.size() + slack
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     h.assert_true(buf.write(s))
     h.assert_eq[String](s, buf.copy_string()?)
 
@@ -468,7 +468,7 @@ class \nodoc\ iso _PropWriteArrayRoundTrip is Property2[String, USize]
   fun ref property2(str: String, slack: USize, h: PropertyHelper) ? =>
     let arr: Array[U8] val = str.array()
     let cap = arr.size() + slack
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     h.assert_true(buf.write_array(arr))
     h.assert_array_eq[U8](arr, buf.copy_array()?)
 
@@ -485,7 +485,7 @@ class \nodoc\ iso _PropWriteReturnsIffFits is Property2[String, USize]
 
   fun ref property2(str: String, cap: USize, h: PropertyHelper) =>
     let s: String val = str.clone()
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     let fits = s.size() <= cap
     h.assert_eq[Bool](fits, buf.write(s))
 
@@ -502,7 +502,7 @@ class \nodoc\ iso _PropOversizeWriteIsNoOp is Property2[String, USize]
   fun ref property2(prefill: String, overflow: USize, h: PropertyHelper) ? =>
     let p: String val = prefill.clone()
     let cap = p.size()
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     h.assert_true(buf.write(p))
     let before_written = buf.get_written_size()
     let before_bytes: Array[U8] val = buf.copy_array()?
@@ -533,7 +533,7 @@ class \nodoc\ iso _PropAllocatedInvariant is Property2[String, USize]
 
   fun ref property2(s: String, cap: USize, h: PropertyHelper) =>
     let str: String val = s.clone()
-    let buf = CBuffer(cap)
+    let buf = CBuffer[ISize](cap)
     buf.write(str)
     h.assert_eq[USize](cap, buf.allocated())
     buf.reset()
